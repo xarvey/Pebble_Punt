@@ -1,0 +1,19 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "xiao67@purdue.edu",
+    "longName": "hi",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "shortName": "hi",
+    "uuid": "6cc2cfed-bb32-45a2-b57c-6a10552e4d5e",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
