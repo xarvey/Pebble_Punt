@@ -7,46 +7,55 @@
 Window *window;
 TextLayer *text_layer_1, *text_layer_2,*text_layer_3,*text_layer_4;
 char tap_text[3];
- 
+char str[150]={0};
 int prevx=0;
 int prevy=0;
 int prevz=0;
 int time_in_air=-2;
+uint64_t last_change=0;
   
 void accel_handler(AccelData *data, uint32_t num_samples)
 {
   // data is an array of num_samples elements.
   // num_samples was set when calling accel_data_service_subscribe.
  
-  char str[150]={0};
+  
   //snprintf(str,sizeof(data[0].x), "x: %d", data[0].x);
   
   
-  if (abs(prevx-data[0].x)>=500 || abs(prevy-data[0].y)>=500  ||  abs(prevz-data[0].z)>=500 )
+  if (abs(prevx-data[0].x)>=600 || abs(prevy-data[0].y)>=600  ||  abs(prevz-data[0].z)>=600 )
+  {
     time_in_air++;
+    last_change=data[0].timestamp;
+  }
   
   
   prevx=data[0].x;
   prevy=data[0].y;
   prevz=data[0].z;
   
-  int flying_distance=(int)(0.5*9.80665*time_in_air*time_in_air);
+  
+  int flying_distance=(int)(0.5*9.80665*time_in_air*time_in_air/400);
   if (time_in_air>=1)
-  printf("%d %d\n",time_in_air,flying_distance);
-  //char* str1="WTF";
-  
-  text_layer_set_text(text_layer_1, str);
-/*
-  memset(str,sizeof(str),0);
-  snprintf(str,100,"y: %d", data->y);
-  text_layer_set_text(text_layer_2, str);
+  {
+    memset(str,sizeof(str),0);
+   // printf("%d",flying_distance);
+    snprintf(str,sizeof(str),"Reached %d m", flying_distance);
+   // printf("The string is : %s",str);
+    
+    
+  }
 
+  text_layer_set_text(text_layer_1, str);
   
-  memset(str,sizeof(str),0);
-  snprintf(str,100, "z: %d", data->z);
-  text_layer_set_text(text_layer_3, str);
-*/
+  if (abs(last_change-data[0].timestamp)>=5000)
+    {
+    time_in_air=-2;
+   // printf("Clear");
+  }
   
+    
+ 
   
 }
  
@@ -82,35 +91,25 @@ void window_load(Window *window)
 {
   Layer *window_layer = window_get_root_layer(window);
  
-  text_layer_1 = text_layer_create(GRect(0, 0, 144, 20));
+  text_layer_1 = text_layer_create(GRect(0, 55, 144, 50));
+  
+   text_layer_set_font(text_layer_1, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_text_alignment(text_layer_1, GTextAlignmentCenter);
+  
   layer_add_child(window_layer, text_layer_get_layer(text_layer_1));
- 
-  text_layer_2 = text_layer_create(GRect(0, 20, 144, 20));
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_2));
-  
-  text_layer_3 = text_layer_create(GRect(0, 40, 144, 20));
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_3));
-  
-  text_layer_4 = text_layer_create(GRect(0, 60, 144, 20));
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_4));
   
   
-  
- 
+   text_layer_set_text(text_layer_1, "THROW YOUR PEBBLE!!!");
   accel_data_service_subscribe(1, accel_handler);
   accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
  
-  accel_tap_service_subscribe(tap_handler);
 }
  
 void window_unload(Window *window)
 {
   // Call this before destroying text_layer, because it can change the text
   // and this must only happen while the layer exists.
-  accel_data_service_unsubscribe();
-  accel_tap_service_unsubscribe();
- 
-  text_layer_destroy(text_layer_2);
+  accel_data_service_unsubscribe(); 
   text_layer_destroy(text_layer_1);
 }
  
